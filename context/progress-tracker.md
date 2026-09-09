@@ -5,24 +5,28 @@ change.
 
 ## Current Phase
 
-- Phase 1: Design System
+- Phase 1: Design System — complete
 
 ## Current Goal
 
-- Install and configure shadcn/ui, add required components, create cn() utility, apply dark theme CSS variables
+- [Next feature spec]
 
 ## Completed
 
-- None yet.
+- Design system setup (spec: context/feature-specs/01-design-system.md)
+  - shadcn/ui (canary) installed and initialized for Tailwind v4
+  - Components added: Button, Card, Dialog, Input, Tabs, Textarea, ScrollArea
+  - lucide-react installed
+  - lib/utils.ts exports cn() from the `cn` package
+  - Dark theme CSS variables defined in globals.css (--bg-base, --bg-surface, etc.)
+  - shadcn semantic tokens (--background, --foreground, etc.) mapped to project dark theme
+  - Project design tokens exposed as Tailwind utilities via @theme inline
+  - `<html>` has `dark` class so shadcn dark: variants are always active
+  - `npm run build` passes
 
 ## In Progress
 
-- Design system setup (spec: context/feature-specs/01-design-system.md)
-  - shadcn/ui install and init
-  - Adding: Button, Card, Dialog, Input, Tabs, Textarea, ScrollArea
-  - lucide-react install
-  - lib/utils.ts with cn() helper
-  - Dark theme CSS variables in globals.css
+- None yet.
 
 ## Next Up
 
@@ -34,10 +38,12 @@ change.
 
 ## Architecture Decisions
 
-- [Decisions made that affect the system design or
-  data model — include why the decision was made]
+- shadcn canary used (not stable) because Tailwind v4 support requires it
+- Dark-only theme: all color values set in :root (no light/dark toggle); `dark` class
+  on `<html>` activates shadcn's `@custom-variant dark` for component dark: variants
+- lib/utils.ts uses the `cn` package (shadcn's lightweight utility) rather than clsx + tailwind-merge
 
 ## Session Notes
 
 - Next.js 16.3.3 + React 19 + Tailwind CSS v4 (CSS-first config, no tailwind.config.js)
-- shadcn/ui requires canary build for Tailwind v4 support
+- components/ui/* are generated — do not modify per spec
