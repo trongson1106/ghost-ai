@@ -5,7 +5,7 @@ change.
 
 ## Current Phase
 
-- Phase 1: Design System — complete
+- Phase 2: Editor Chrome — complete
 
 ## Current Goal
 
@@ -13,6 +13,10 @@ change.
 
 ## Completed
 
+- Editor chrome (spec: context/feature-specs/02-editor.md)
+  - `components/editor/editor-navbar.tsx` — fixed-height navbar, sidebar toggle (PanelLeftOpen/Close), dark bg + bottom border
+  - `components/editor/project-sidebar.tsx` — floating overlay sidebar, slides in from left, Projects title + close, My Projects/Shared tabs with empty states, New Project button
+  - Dialog pattern ready via existing `components/ui/dialog.tsx` + globals.css tokens
 - Design system setup (spec: context/feature-specs/01-design-system.md)
   - shadcn/ui (canary) installed and initialized for Tailwind v4
   - Components added: Button, Card, Dialog, Input, Tabs, Textarea, ScrollArea
