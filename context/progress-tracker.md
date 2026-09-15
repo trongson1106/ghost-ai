@@ -5,7 +5,7 @@ change.
 
 ## Current Phase
 
-- Phase 2: Editor Chrome — complete
+- Phase 3: Auth — complete
 
 ## Current Goal
 
@@ -13,6 +13,16 @@ change.
 
 ## Completed
 
+- Auth wiring (spec: context/feature-specs/03-auth.md)
+  - `proxy.ts` — clerkMiddleware exported as `proxy` (Next.js 16 convention); protects all routes except `/sign-in` and `/sign-up`
+  - `app/layout.tsx` — `ClerkProvider` wraps root layout; dark theme from `@clerk/ui/themes` + CSS variable overrides (no hardcoded colors)
+  - `app/sign-in/[[...sign-in]]/page.tsx` — two-panel layout (lg+: logo/tagline/features left, Clerk form right; mobile: form only)
+  - `app/sign-up/[[...sign-up]]/page.tsx` — same two-panel layout as sign-in
+  - `app/page.tsx` — redirects authenticated → `/editor`, unauthenticated → `/sign-in`
+  - `app/editor/page.tsx` — placeholder editor shell rendering existing navbar + sidebar components
+  - `components/editor/editor-navbar.tsx` — `UserButton` added to right section
+  - `.env.local` — `NEXT_PUBLIC_CLERK_SIGN_IN_URL` and `NEXT_PUBLIC_CLERK_SIGN_UP_URL` added
+  - `@clerk/ui` installed
 - Editor chrome (spec: context/feature-specs/02-editor.md)
   - `components/editor/editor-navbar.tsx` — fixed-height navbar, sidebar toggle (PanelLeftOpen/Close), dark bg + bottom border
   - `components/editor/project-sidebar.tsx` — floating overlay sidebar, slides in from left, Projects title + close, My Projects/Shared tabs with empty states, New Project button
@@ -42,6 +52,9 @@ change.
 
 ## Architecture Decisions
 
+- Next.js 16 renames `middleware.ts` → `proxy.ts`; the exported function must be named `proxy` not `middleware`
+- Clerk v7 `createRouteMatcher` is deprecated; public route check is done manually by pathname prefix in the proxy handler
+- `@clerk/ui` (not `@clerk/themes`) is the correct package for the dark theme in Clerk v7+
 - shadcn canary used (not stable) because Tailwind v4 support requires it
 - Dark-only theme: all color values set in :root (no light/dark toggle); `dark` class
   on `<html>` activates shadcn's `@custom-variant dark` for component dark: variants
