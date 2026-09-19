@@ -5,7 +5,7 @@ change.
 
 ## Current Phase
 
-- Phase 3: Auth — complete
+- Phase 4: Project Dialogs — complete
 
 ## Current Goal
 
@@ -13,6 +13,14 @@ change.
 
 ## Completed
 
+- Editor home + project dialogs (spec: context/feature-specs/04-project-dialogs.md)
+  - `app/editor/page.tsx` — home screen with title/description/New Project button; all three dialogs rendered and wired
+  - `hooks/use-project-dialogs.ts` — manages dialog state, form state (with live slug), loading state, and mock project list
+  - `types/project.ts` — `Project` interface
+  - `components/editor/dialogs/create-project-dialog.tsx` — name input + live slug preview
+  - `components/editor/dialogs/rename-project-dialog.tsx` — prefilled input, auto-focused, Enter submits
+  - `components/editor/dialogs/delete-project-dialog.tsx` — destructive confirmation, no input
+  - `components/editor/project-sidebar.tsx` — project items with hover rename/delete actions for owned projects; mobile backdrop that closes on tap
 - Auth wiring (spec: context/feature-specs/03-auth.md)
   - `proxy.ts` — clerkMiddleware exported as `proxy` (Next.js 16 convention); protects all routes except `/sign-in` and `/sign-up`
   - `app/layout.tsx` — `ClerkProvider` wraps root layout; dark theme from `@clerk/ui/themes` + CSS variable overrides (no hardcoded colors)
