@@ -5,7 +5,7 @@ change.
 
 ## Current Phase
 
-- Phase 4: Project Dialogs — complete
+- Phase 7: Wire editor home to real project APIs — complete
 
 ## Current Goal
 
@@ -13,6 +13,25 @@ change.
 
 ## Completed
 
+- Wire editor home + dialogs to real project APIs (spec: context/feature-specs/07-wire-editor-home.md)
+  - `lib/projects.ts` — `getOwnedProjects(userId)` and `getSharedProjects(userEmail)` server-side helpers using Prisma selects
+  - `hooks/use-project-actions.ts` — replaces mock `use-project-dialogs`; manages dialog state + all mutations; create calls `POST /api/projects` then navigates to `/editor/{project.id}`; rename calls `PATCH` then `router.refresh()`; delete calls `DELETE` then redirects to `/editor` if active workspace else refreshes; room ID preview = `{slug}-{4-char-suffix}` generated on dialog open
+  - `components/editor/editor-home.tsx` — new `"use client"` wrapper that receives server-fetched project lists as props and wires `useProjectActions` to the sidebar and dialogs
+  - `app/editor/page.tsx` — converted to async server component; fetches owned projects via `getOwnedProjects` and shared projects via `getSharedProjects` (using `currentUser()` email) in parallel; passes `ProjectSummary[]` to `EditorHome`
+  - `components/editor/project-sidebar.tsx` — props changed to `ownedProjects`/`sharedProjects: ProjectSummary[]`; no longer filters client-side
+  - `components/editor/dialogs/create-project-dialog.tsx` — `slug` prop renamed to `roomId`; label updated to "Room ID:"
+  - `components/editor/dialogs/rename-project-dialog.tsx` and `delete-project-dialog.tsx` — updated to `ProjectSummary` type
+  - `types/project.ts` — `Project` interface replaced by `ProjectSummary` (removed `slug`, kept `id`, `name`, `owned`)
+- Project API routes (spec: context/feature-specs/06-project-apis.md)
+  - `app/api/projects/route.ts` — `GET` lists the authenticated user's projects ordered by `createdAt` desc; `POST` creates a project (defaults name to `Untitled Project`); both return `401` for unauthenticated requests
+  - `app/api/projects/[projectID]/route.ts` — `PATCH` renames a project; `DELETE` deletes a project; both return `401` for unauthenticated requests and `403` when the caller is not the owner
+  - `lib/prisma.ts` — fixed `makeClient` return type to `PrismaClient` (cast Accelerate-extended client via `as unknown as PrismaClient`) to resolve union-type TS2349 error
+- Prisma data models + client (spec: context/feature-specs/05-prisma.md)
+  - `prisma/models/project.prisma` — `Project` (ownerId, name, description, status enum DRAFT/ARCHIVED, canvasJsonPath, timestamps; indexes on ownerId and createdAt) + `ProjectCollaborator` (project cascade, email, createdAt; unique [projectId,email]; indexes on email and [projectId,createdAt])
+  - `prisma.config.ts` — updated to `schema: 'prisma'` (multi-file), `migrations.path`, `env()` helper, `dotenv/config`
+  - `lib/prisma.ts` — cached global singleton; branches on `prisma+postgres://` → Accelerate (`withAccelerate`), otherwise → `PrismaPg` direct adapter
+  - Migration `20260925202706_init` applied; client regenerated to `app/generated/prisma`
+  - `@prisma/extension-accelerate` installed
 - Editor home + project dialogs (spec: context/feature-specs/04-project-dialogs.md)
   - `app/editor/page.tsx` — home screen with title/description/New Project button; all three dialogs rendered and wired
   - `hooks/use-project-dialogs.ts` — manages dialog state, form state (with live slug), loading state, and mock project list
@@ -60,6 +79,10 @@ change.
 
 ## Architecture Decisions
 
+- `lib/prisma.ts` `makeClient` must have an explicit `: PrismaClient` return type; `withAccelerate()` produces an extended type incompatible with the non-Accelerate branch — cast with `as unknown as PrismaClient` to get a usable union-free type
+- `prisma.config.ts` `schema` field accepts a folder path; Prisma 7 recursively finds all `*.prisma` files — enables multi-file schema without preview flags
+- Accelerate URLs (`prisma+postgres://`) must NOT be passed to driver adapters — use `accelerateUrl` constructor option + `withAccelerate()` extension
+- `lib/prisma.ts` caches the client on `globalThis` in non-production to survive hot reloads; production always creates a fresh instance per module evaluation
 - Next.js 16 renames `middleware.ts` → `proxy.ts`; the exported function must be named `proxy` not `middleware`
 - Clerk v7 `createRouteMatcher` is deprecated; public route check is done manually by pathname prefix in the proxy handler
 - `@clerk/ui` (not `@clerk/themes`) is the correct package for the dark theme in Clerk v7+

@@ -1,6 +1,5 @@
-export interface Project {
+export interface ProjectSummary {
   id: string;
   name: string;
-  slug: string;
   owned: boolean;
 }
