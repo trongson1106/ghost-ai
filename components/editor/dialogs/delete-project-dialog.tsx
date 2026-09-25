@@ -10,12 +10,12 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Project } from "@/types/project";
+import type { ProjectSummary } from "@/types/project";
 
 interface DeleteProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  project: Project | null;
+  project: ProjectSummary | null;
   isSubmitting: boolean;
   onSubmit: () => void;
 }

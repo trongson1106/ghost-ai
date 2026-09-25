@@ -3,28 +3,27 @@
 import { X, Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Project } from "@/types/project";
+import type { ProjectSummary } from "@/types/project";
 
 interface ProjectSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  projects: Project[];
+  ownedProjects: ProjectSummary[];
+  sharedProjects: ProjectSummary[];
   onNewProject: () => void;
-  onRenameProject: (project: Project) => void;
-  onDeleteProject: (project: Project) => void;
+  onRenameProject: (project: ProjectSummary) => void;
+  onDeleteProject: (project: ProjectSummary) => void;
 }
 
 export function ProjectSidebar({
   isOpen,
   onClose,
-  projects,
+  ownedProjects,
+  sharedProjects,
   onNewProject,
   onRenameProject,
   onDeleteProject,
 }: ProjectSidebarProps) {
-  const myProjects = projects.filter((p) => p.owned);
-  const sharedProjects = projects.filter((p) => !p.owned);
-
   return (
     <>
       {/* Mobile backdrop */}
@@ -61,13 +60,13 @@ export function ProjectSidebar({
             </TabsList>
 
             <TabsContent value="my-projects" className="flex-1 overflow-y-auto mt-2">
-              {myProjects.length === 0 ? (
+              {ownedProjects.length === 0 ? (
                 <div className="flex flex-1 items-center justify-center py-8">
                   <p className="text-sm text-text-muted">No projects yet.</p>
                 </div>
               ) : (
                 <ul className="flex flex-col gap-0.5">
-                  {myProjects.map((project) => (
+                  {ownedProjects.map((project) => (
                     <ProjectItem
                       key={project.id}
                       project={project}
@@ -107,20 +106,18 @@ export function ProjectSidebar({
 }
 
 interface ProjectItemProps {
-  project: Project;
-  onRename?: (project: Project) => void;
-  onDelete?: (project: Project) => void;
+  project: ProjectSummary;
+  onRename?: (project: ProjectSummary) => void;
+  onDelete?: (project: ProjectSummary) => void;
 }
 
 function ProjectItem({ project, onRename, onDelete }: ProjectItemProps) {
-  const showActions = project.owned && (onRename || onDelete);
-
   return (
     <li className="group flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-bg-elevated">
       <span className="flex-1 truncate text-sm text-text-secondary">
         {project.name}
       </span>
-      {showActions && (
+      {(onRename || onDelete) && (
         <div className="flex items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           {onRename && (
             <Button
