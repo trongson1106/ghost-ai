@@ -5,7 +5,7 @@ change.
 
 ## Current Phase
 
-- Phase 4: Project Dialogs — complete
+- Phase 5: Prisma data models + client — complete
 
 ## Current Goal
 
@@ -13,6 +13,12 @@ change.
 
 ## Completed
 
+- Prisma data models + client (spec: context/feature-specs/05-prisma.md)
+  - `prisma/models/project.prisma` — `Project` (ownerId, name, description, status enum DRAFT/ARCHIVED, canvasJsonPath, timestamps; indexes on ownerId and createdAt) + `ProjectCollaborator` (project cascade, email, createdAt; unique [projectId,email]; indexes on email and [projectId,createdAt])
+  - `prisma.config.ts` — updated to `schema: 'prisma'` (multi-file), `migrations.path`, `env()` helper, `dotenv/config`
+  - `lib/prisma.ts` — cached global singleton; branches on `prisma+postgres://` → Accelerate (`withAccelerate`), otherwise → `PrismaPg` direct adapter
+  - Migration `20260925202706_init` applied; client regenerated to `app/generated/prisma`
+  - `@prisma/extension-accelerate` installed
 - Editor home + project dialogs (spec: context/feature-specs/04-project-dialogs.md)
   - `app/editor/page.tsx` — home screen with title/description/New Project button; all three dialogs rendered and wired
   - `hooks/use-project-dialogs.ts` — manages dialog state, form state (with live slug), loading state, and mock project list
@@ -60,6 +66,9 @@ change.
 
 ## Architecture Decisions
 
+- `prisma.config.ts` `schema` field accepts a folder path; Prisma 7 recursively finds all `*.prisma` files — enables multi-file schema without preview flags
+- Accelerate URLs (`prisma+postgres://`) must NOT be passed to driver adapters — use `accelerateUrl` constructor option + `withAccelerate()` extension
+- `lib/prisma.ts` caches the client on `globalThis` in non-production to survive hot reloads; production always creates a fresh instance per module evaluation
 - Next.js 16 renames `middleware.ts` → `proxy.ts`; the exported function must be named `proxy` not `middleware`
 - Clerk v7 `createRouteMatcher` is deprecated; public route check is done manually by pathname prefix in the proxy handler
 - `@clerk/ui` (not `@clerk/themes`) is the correct package for the dark theme in Clerk v7+
