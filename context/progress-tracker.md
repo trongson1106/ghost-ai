@@ -5,7 +5,7 @@ change.
 
 ## Current Phase
 
-- Phase 9.1: Share / collaborators adjustments — complete
+- Phase 12: Shade panel — complete
 
 ## Current Goal
 
@@ -13,6 +13,22 @@ change.
 
 ## Completed
 
+- Shade panel (spec: context/feature-specs/12-shade-panel.md)
+  - `types/canvas.ts` — extended `shape` union with `"pill" | "cylinder" | "hexagon"`
+  - `components/editor/canvas/canvas-node.tsx` — `CanvasNodeComponent` custom node renderer; simple bordered rectangle with centered label; fill/text/border colors from `CanvasNodeData.colour` (falls back to `NODE_COLORS[0]`)
+  - `components/editor/canvas/shade-panel.tsx` — `ShadePanel` floating pill toolbar; 6 draggable shape buttons (Rectangle 200×80, Diamond 160×160, Circle 100×100, Pill 200×80, Cylinder 120×100, Hexagon 140×120); drag sets `application/canvas-shape` JSON payload with shape name and size
+  - `components/editor/canvas/canvas-flow.tsx` — wrapped with `ReactFlowProvider` so inner component can call `useReactFlow()`; `CanvasFlowInner` calls `useLiveblocksFlow<CanvasNode>` and `useReactFlow`; `onDragOver`/`onDrop` handlers convert screen → flow position, create new node via `onNodesChange([{ type: "add", item }])`; node ID format `{shape}-{timestamp}-{counter}`; `nodeTypes` registers `canvasNode`; `<ShadePanel>` rendered inside `<Panel position="bottom-center">`
+
+- Base canvas (spec: context/feature-specs/11-base-canvas.md)
+  - `types/canvas.ts` — `CanvasNodeData` (`label`, `colour`, `shape`); `NODE_COLORS` array of 8 dark fill + vivid text pairs from ui-context; `CanvasNode` and `CanvasEdge` types keyed to `"canvasNode"` and `"canvasEdge"` type identifiers
+  - `components/editor/canvas/canvas-flow.tsx` — `CanvasFlow` client component; uses `useLiveblocksFlow({ suspense: true, nodes: { initial: [] }, edges: { initial: [] } })`; renders `ReactFlow` with `ConnectionMode.Loose`, `fitView`, `Background` (dots), `MiniMap`, `Cursors`
+  - `components/editor/canvas/canvas-room.tsx` — `CanvasRoom` client component; wraps with `LiveblocksProvider` (authEndpoint `/api/liveblocks-auth`), `RoomProvider` (initialPresence `{ cursor: null, isThinking: false }`), inline `CanvasErrorBoundary` class component, `ClientSideSuspense`
+  - `components/editor/workspace-shell.tsx` — replaced canvas placeholder `<main>` with `<CanvasRoom roomId={project.id} />`
+- Liveblocks setup (spec: context/feature-specs/10-liveblocks-setup.md)
+  - `liveblocks.config.ts` — typed `Presence` (`cursor: {x,y}|null`, `isThinking: boolean`) and `UserMeta` (`id`, `info.name`, `info.avatar`, `info.color`)
+  - `lib/liveblocks.ts` — cached global singleton `Liveblocks` node client; `getCursorColor(userId)` deterministically maps a user ID to one of 10 fixed hex colors via a simple hash
+  - `app/api/liveblocks-auth/route.ts` — `POST`; requires Clerk auth (401); reads `room` from body; verifies project access via `getProjectAccess` (403 if denied); calls `getOrCreateRoom` with `defaultAccesses: []`; issues access-token session with `name`, `avatar`, `color`; returns Liveblocks `{ status, body }`
+  - `@liveblocks/node` installed
 - Share / collaborators adjustments (spec: context/feature-specs/09-1-adjust-share-collaborators.md)
   - `types/collaborator.ts` — added `OwnerProfile { email, name, imageUrl }` (no id, since it comes from Clerk, not the collaborators table)
   - `app/api/users/search/route.ts` — new `GET` endpoint; requires auth; accepts `?q=` query param; calls Clerk `getUserList({ query, limit: 5 })`; returns `{ emails: string[] }` of primary addresses

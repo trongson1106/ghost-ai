@@ -8,6 +8,7 @@ import { CreateProjectDialog } from "@/components/editor/dialogs/create-project-
 import { RenameProjectDialog } from "@/components/editor/dialogs/rename-project-dialog";
 import { DeleteProjectDialog } from "@/components/editor/dialogs/delete-project-dialog";
 import { ShareDialog } from "@/components/editor/dialogs/share-dialog";
+import { CanvasRoom } from "@/components/editor/canvas/canvas-room";
 import { useProjectActions } from "@/hooks/use-project-actions";
 import type { ProjectSummary } from "@/types/project";
 
@@ -69,8 +70,8 @@ export function WorkspaceShell({
           activeProjectId={project.id}
         />
 
-        <main className="flex-1 flex items-center justify-center bg-bg-base">
-          <p className="text-sm text-text-muted">Canvas coming soon</p>
+        <main className="flex-1 overflow-hidden bg-bg-base">
+          <CanvasRoom roomId={project.id} />
         </main>
 
         {aiSidebarOpen && (
