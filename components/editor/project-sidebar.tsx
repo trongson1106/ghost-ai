@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { X, Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +14,7 @@ interface ProjectSidebarProps {
   onNewProject: () => void;
   onRenameProject: (project: ProjectSummary) => void;
   onDeleteProject: (project: ProjectSummary) => void;
+  activeProjectId?: string;
 }
 
 export function ProjectSidebar({
@@ -23,6 +25,7 @@ export function ProjectSidebar({
   onNewProject,
   onRenameProject,
   onDeleteProject,
+  activeProjectId,
 }: ProjectSidebarProps) {
   return (
     <>
@@ -70,6 +73,7 @@ export function ProjectSidebar({
                     <ProjectItem
                       key={project.id}
                       project={project}
+                      isActive={project.id === activeProjectId}
                       onRename={onRenameProject}
                       onDelete={onDeleteProject}
                     />
@@ -86,7 +90,11 @@ export function ProjectSidebar({
               ) : (
                 <ul className="flex flex-col gap-0.5">
                   {sharedProjects.map((project) => (
-                    <ProjectItem key={project.id} project={project} />
+                    <ProjectItem
+                      key={project.id}
+                      project={project}
+                      isActive={project.id === activeProjectId}
+                    />
                   ))}
                 </ul>
               )}
@@ -107,16 +115,26 @@ export function ProjectSidebar({
 
 interface ProjectItemProps {
   project: ProjectSummary;
+  isActive?: boolean;
   onRename?: (project: ProjectSummary) => void;
   onDelete?: (project: ProjectSummary) => void;
 }
 
-function ProjectItem({ project, onRename, onDelete }: ProjectItemProps) {
+function ProjectItem({ project, isActive, onRename, onDelete }: ProjectItemProps) {
   return (
-    <li className="group flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-bg-elevated">
-      <span className="flex-1 truncate text-sm text-text-secondary">
+    <li
+      className={`group flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-bg-elevated ${
+        isActive ? "bg-bg-elevated" : ""
+      }`}
+    >
+      <Link
+        href={`/editor/${project.id}`}
+        className={`flex-1 truncate text-sm ${
+          isActive ? "text-text-primary font-medium" : "text-text-secondary"
+        }`}
+      >
         {project.name}
-      </span>
+      </Link>
       {(onRename || onDelete) && (
         <div className="flex items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           {onRename && (

@@ -5,7 +5,7 @@ change.
 
 ## Current Phase
 
-- Phase 7: Wire editor home to real project APIs — complete
+- Phase 12: Shade panel — complete
 
 ## Current Goal
 
@@ -13,6 +13,42 @@ change.
 
 ## Completed
 
+- Shade panel (spec: context/feature-specs/12-shade-panel.md)
+  - `types/canvas.ts` — extended `shape` union with `"pill" | "cylinder" | "hexagon"`
+  - `components/editor/canvas/canvas-node.tsx` — `CanvasNodeComponent` custom node renderer; simple bordered rectangle with centered label; fill/text/border colors from `CanvasNodeData.colour` (falls back to `NODE_COLORS[0]`)
+  - `components/editor/canvas/shade-panel.tsx` — `ShadePanel` floating pill toolbar; 6 draggable shape buttons (Rectangle 200×80, Diamond 160×160, Circle 100×100, Pill 200×80, Cylinder 120×100, Hexagon 140×120); drag sets `application/canvas-shape` JSON payload with shape name and size
+  - `components/editor/canvas/canvas-flow.tsx` — wrapped with `ReactFlowProvider` so inner component can call `useReactFlow()`; `CanvasFlowInner` calls `useLiveblocksFlow<CanvasNode>` and `useReactFlow`; `onDragOver`/`onDrop` handlers convert screen → flow position, create new node via `onNodesChange([{ type: "add", item }])`; node ID format `{shape}-{timestamp}-{counter}`; `nodeTypes` registers `canvasNode`; `<ShadePanel>` rendered inside `<Panel position="bottom-center">`
+
+- Base canvas (spec: context/feature-specs/11-base-canvas.md)
+  - `types/canvas.ts` — `CanvasNodeData` (`label`, `colour`, `shape`); `NODE_COLORS` array of 8 dark fill + vivid text pairs from ui-context; `CanvasNode` and `CanvasEdge` types keyed to `"canvasNode"` and `"canvasEdge"` type identifiers
+  - `components/editor/canvas/canvas-flow.tsx` — `CanvasFlow` client component; uses `useLiveblocksFlow({ suspense: true, nodes: { initial: [] }, edges: { initial: [] } })`; renders `ReactFlow` with `ConnectionMode.Loose`, `fitView`, `Background` (dots), `MiniMap`, `Cursors`
+  - `components/editor/canvas/canvas-room.tsx` — `CanvasRoom` client component; wraps with `LiveblocksProvider` (authEndpoint `/api/liveblocks-auth`), `RoomProvider` (initialPresence `{ cursor: null, isThinking: false }`), inline `CanvasErrorBoundary` class component, `ClientSideSuspense`
+  - `components/editor/workspace-shell.tsx` — replaced canvas placeholder `<main>` with `<CanvasRoom roomId={project.id} />`
+- Liveblocks setup (spec: context/feature-specs/10-liveblocks-setup.md)
+  - `liveblocks.config.ts` — typed `Presence` (`cursor: {x,y}|null`, `isThinking: boolean`) and `UserMeta` (`id`, `info.name`, `info.avatar`, `info.color`)
+  - `lib/liveblocks.ts` — cached global singleton `Liveblocks` node client; `getCursorColor(userId)` deterministically maps a user ID to one of 10 fixed hex colors via a simple hash
+  - `app/api/liveblocks-auth/route.ts` — `POST`; requires Clerk auth (401); reads `room` from body; verifies project access via `getProjectAccess` (403 if denied); calls `getOrCreateRoom` with `defaultAccesses: []`; issues access-token session with `name`, `avatar`, `color`; returns Liveblocks `{ status, body }`
+  - `@liveblocks/node` installed
+- Share / collaborators adjustments (spec: context/feature-specs/09-1-adjust-share-collaborators.md)
+  - `types/collaborator.ts` — added `OwnerProfile { email, name, imageUrl }` (no id, since it comes from Clerk, not the collaborators table)
+  - `app/api/users/search/route.ts` — new `GET` endpoint; requires auth; accepts `?q=` query param; calls Clerk `getUserList({ query, limit: 5 })`; returns `{ emails: string[] }` of primary addresses
+  - `app/api/projects/[projectID]/collaborators/route.ts` — `GET` now also fetches the project owner's Clerk profile via `users.getUser(ownerId)` and returns `{ owner, collaborators }`; `POST` validates that the invited email belongs to an existing Clerk account before upserting, returns `{ error: "No account found with that email" }` (400) when not found
+  - `components/editor/dialogs/share-dialog.tsx` — remove X button now sets `pendingRemove` state instead of calling DELETE directly; confirmation `Dialog` overlays with red `DialogTitle`, description naming the collaborator, and `Cancel` / `Remove` buttons; invite input turns red (`border-state-error`) and shows error text on failed invite; typing in the email field debounces (300 ms) a fetch to `/api/users/search` and shows a dropdown of matching emails; clicking a suggestion fills the input without adding; collaborator view now shows an `OWNER` section (Crown icon) above `COLLABORATORS` using the `owner` returned from GET
+- Share / collaborators (spec: context/feature-specs/09-share-collaborators.md)
+  - `types/collaborator.ts` — `CollaboratorProfile { id, email, name, imageUrl }` type
+  - `lib/collaborators.ts` — `enrichWithClerk(rows)` batch-fetches Clerk users by email via `getUserList`; builds name from `firstName + lastName`; falls back to `{ name: null, imageUrl: null }` when Clerk has no record for an email
+  - `app/api/projects/[projectID]/collaborators/route.ts` — `GET` lists collaborators (accessible to owner or any collaborator); `POST` adds a collaborator by email (owner only, upsert, prevents self-invite)
+  - `app/api/projects/[projectID]/collaborators/[collaboratorId]/route.ts` — `DELETE` removes a collaborator (owner only, validates collaborator belongs to project)
+  - `components/editor/dialogs/share-dialog.tsx` — fetches collaborators on open; owner view: invite-by-email input + copy-link row + remove button per collaborator; collaborator view: read-only list; avatar shows Clerk image or initials fallback
+  - `components/editor/workspace-shell.tsx` — added `isOwner` prop + `shareOpen` state; Share button wires to `ShareDialog`
+  - `app/editor/[roomID]/page.tsx` — computes `isOwner = project.ownerId === userId`; passes to `WorkspaceShell`
+- Editor workspace shell (spec: context/feature-specs/08-editor-workspace-shell.md)
+  - `lib/project-access.ts` — `getIdentity()` returns current Clerk `userId` + primary `email`; `getProjectAccess(projectId, userId, email)` checks owner OR collaborator membership via Prisma `OR` query
+  - `components/editor/access-denied.tsx` — centered layout, Lock icon, short message, button back to `/editor`; used for both missing and unauthorized projects
+  - `app/editor/[roomID]/page.tsx` — async server component; calls `getIdentity()` (redirects to `/sign-in` if null); fetches project access + project lists in parallel; returns `<AccessDenied />` when project missing or user lacks access; otherwise renders `WorkspaceShell`
+  - `components/editor/workspace-shell.tsx` — `"use client"` wrapper; manages left sidebar + right AI sidebar open state; renders navbar with project name/share/AI toggle, `ProjectSidebar` with active project highlighted, canvas placeholder, collapsible AI sidebar placeholder; includes all three project dialogs
+  - `components/editor/editor-navbar.tsx` — extended with optional `projectName`, `aiSidebarOpen`, `onAiSidebarToggle`, and `onShare` props; Share button and Bot toggle appear only when handlers are provided
+  - `components/editor/project-sidebar.tsx` — added optional `activeProjectId` prop; active project item gets `bg-bg-elevated` background and `text-text-primary font-medium` text styling
 - Wire editor home + dialogs to real project APIs (spec: context/feature-specs/07-wire-editor-home.md)
   - `lib/projects.ts` — `getOwnedProjects(userId)` and `getSharedProjects(userEmail)` server-side helpers using Prisma selects
   - `hooks/use-project-actions.ts` — replaces mock `use-project-dialogs`; manages dialog state + all mutations; create calls `POST /api/projects` then navigates to `/editor/{project.id}`; rename calls `PATCH` then `router.refresh()`; delete calls `DELETE` then redirects to `/editor` if active workspace else refreshes; room ID preview = `{slug}-{4-char-suffix}` generated on dialog open
