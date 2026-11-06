@@ -62,7 +62,7 @@ export function useProjectActions() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create project");
       closeDialog();
-      router.push(`/editor/${data.project.id}`);
+      router.push(`/editor/${data.project.id}?new=1`);
     } finally {
       setIsSubmitting(false);
     }

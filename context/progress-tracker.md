@@ -5,13 +5,34 @@ change.
 
 ## Current Phase
 
-- Phase 12: Shade panel — complete
+- Phase 17: Starter template library — complete
 
 ## Current Goal
 
 - [Next feature spec]
 
 ## Completed
+
+- Starter template library (spec: context/feature-specs/17-starter-template.md)
+  - `lib/templates.ts` — `Template` type + `TEMPLATES` array; 4 entries: Scratch (empty), Microservices (API gateway → 3 services + 2 cylinder DBs), CI/CD Pipeline (5-node sequential), Event-Driven (producer → pill bus → 3 consumers); helper fns `n()` / `e()` keep definitions terse
+  - `components/editor/dialogs/template-library-dialog.tsx` — `TemplateLibraryDialog`; `TemplatePreview` computes bounds from node positions, renders scaled SVG (rect+text per node, lines for edges); scratch card shows Plus icon placeholder; `TemplateCard` shows preview + name/description, hover reveals `Import` button via gradient overlay; 2-column grid inside `ScrollArea`
+  - `hooks/use-project-actions.ts` — navigate to `/editor/{id}?new=1` after project creation
+  - `components/editor/canvas/canvas-flow.tsx` — added `useSearchParams`/`usePathname`/`useRouter`; `templateOpen` state initialized from `?new=1`; `handleTemplateImport` regenerates node/edge IDs with timestamp suffix, calls `onNodesChange`/`onEdgesChange` with `type:"add"` changes, then clears the param via `router.replace(pathname)`; `TemplateLibraryDialog` rendered inside the canvas div; `useLiveblocksFlow` now typed `<CanvasNode, CanvasEdge>`
+
+- Canvas ergonomics (spec: context/feature-specs/16-canvas-ergonomics.md)
+  - `hooks/useKeyboardShortcuts.ts` — new hook; receives ReactFlow instance + undo/redo handlers; listens on `window` keydown; skips when target is INPUT/TEXTAREA/SELECT or `isContentEditable`; `Ctrl++/=` → zoomIn 200ms, `Ctrl+-` → zoomOut 200ms, `Ctrl+Z` → undo, `Ctrl+Y` → redo
+  - `components/editor/canvas/canvas-controls.tsx` — new pill-shaped control bar; ZoomIn/Maximize2/ZoomOut buttons with 200ms animation + thin separator + Undo2/Redo2 buttons; disabled buttons get `opacity-30 pointer-events-none`
+  - `components/editor/canvas/canvas-flow.tsx` — removed `MiniMap`; added `useHistory` from `@liveblocks/react` (`undo`, `redo`, `canUndo()`, `canRedo()`); added `useKeyboardShortcuts`; added `<Panel position="bottom-left">` with `CanvasControls`; `screenToFlowPosition` now accessed via stored `flow` instance
+
+- Node colour toolbar (spec: context/feature-specs/15-node-colour-toolbar.md)
+  - `components/editor/canvas/canvas-node.tsx` — added `NodeToolbar` (from `@xyflow/react`) shown when `selected`; renders 8 colour swatches (one per `NODE_COLORS` pair) in a floating pill above the node; active swatch gets an `outline` ring in its text color; hovered swatch gets a tight `box-shadow` glow in its text color; `onMouseDown stopPropagation` on the toolbar prevents drag/pan interference; click calls `updateNodeData(id, { colour })` — updates Liveblocks state directly, no server call
+
+- Node editing and wire (spec: context/feature-specs/14-node-editing-and-wire.md)
+  - `components/editor/canvas/canvas-node.tsx` — added `NodeResizer` (visible on hover or select, `minWidth`/`minHeight` 40, colored with node text color); added 4 `Handle` components at top/right/bottom/left (opacity 0→1 on hover, `pointerEvents` none→all, styled as circles); double-click enters label edit mode via `editing` state — renders centered `<textarea>` with `autoFocus`, `onBlur` commits, `Enter` commits, `Shift+Enter` newlines, keyboard events stopPropagated to prevent ReactFlow shortcuts; `useEffect` syncs label from Liveblocks changes while not editing; label display gains `whitespace-pre-wrap` for multi-line support; `updateNodeData` from `useReactFlow` persists label change
+
+- Node shape rendering (spec: context/feature-specs/13-node-shape.md)
+  - `components/editor/canvas/canvas-node.tsx` — replaced placeholder rectangle with shape-specific SVG rendering; `renderShape` returns JSX SVG elements per shape (rectangle/pill/circle via `<rect>`/`<ellipse>`, diamond/hexagon via `<polygon>`, cylinder via layered `<ellipse>` + `<rect>` + `<line>`); uses `width`/`height` from NodeProps with `viewBox` so shapes scale with node size; `selected` prop brightens border (removes `40` hex alpha)
+  - `components/editor/canvas/shade-panel.tsx` — added `buildDragImage` that creates an offscreen SVG div with the matching shape geometry, sets it as the HTML5 drag image centered on cursor, and removes it via `requestAnimationFrame` after the browser captures the snapshot
 
 - Shade panel (spec: context/feature-specs/12-shade-panel.md)
   - `types/canvas.ts` — extended `shape` union with `"pill" | "cylinder" | "hexagon"`
