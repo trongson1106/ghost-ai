@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Bot } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 import { EditorNavbar } from "@/components/editor/editor-navbar";
 import { ProjectSidebar } from "@/components/editor/project-sidebar";
 import { CreateProjectDialog } from "@/components/editor/dialogs/create-project-dialog";
@@ -9,7 +8,9 @@ import { RenameProjectDialog } from "@/components/editor/dialogs/rename-project-
 import { DeleteProjectDialog } from "@/components/editor/dialogs/delete-project-dialog";
 import { ShareDialog } from "@/components/editor/dialogs/share-dialog";
 import { CanvasRoom } from "@/components/editor/canvas/canvas-room";
+import { AiSidebar } from "@/components/editor/ai-sidebar";
 import { useProjectActions } from "@/hooks/use-project-actions";
+import { type SaveStatus } from "@/hooks/use-autosave";
 import type { ProjectSummary } from "@/types/project";
 
 interface WorkspaceShellProps {
@@ -28,6 +29,10 @@ export function WorkspaceShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const saveFnRef = useRef<(() => Promise<void>) | null>(null);
+  const handleSaveReady = useCallback((fn: () => Promise<void>) => { saveFnRef.current = fn; }, []);
+  const handleManualSave = useCallback(() => { saveFnRef.current?.(); }, []);
 
   const {
     dialog,
@@ -53,6 +58,8 @@ export function WorkspaceShell({
         sidebarOpen={sidebarOpen}
         onSidebarToggle={() => setSidebarOpen((o) => !o)}
         projectName={project.name}
+        saveStatus={saveStatus}
+        onSave={handleManualSave}
         aiSidebarOpen={aiSidebarOpen}
         onAiSidebarToggle={() => setAiSidebarOpen((o) => !o)}
         onShare={() => setShareOpen(true)}
@@ -71,20 +78,15 @@ export function WorkspaceShell({
         />
 
         <main className="flex-1 overflow-hidden bg-bg-base">
-          <CanvasRoom roomId={project.id} />
+          <CanvasRoom roomId={project.id} onSaveStatusChange={setSaveStatus} onSaveReady={handleSaveReady} />
         </main>
 
-        {aiSidebarOpen && (
-          <aside className="w-80 flex flex-col bg-bg-surface border-l border-border-default">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-border-default">
-              <Bot className="h-4 w-4 text-accent-ai-text" />
-              <span className="text-sm font-semibold text-text-primary">AI Assistant</span>
-            </div>
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-sm text-text-muted">AI chat coming soon</p>
-            </div>
-          </aside>
-        )}
+        <div
+          className="overflow-hidden transition-[max-width] duration-300 ease-in-out"
+          style={{ maxWidth: aiSidebarOpen ? "320px" : "0px" }}
+        >
+          <AiSidebar />
+        </div>
       </div>
 
       <ShareDialog

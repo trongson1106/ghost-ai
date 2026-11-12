@@ -5,13 +5,33 @@ change.
 
 ## Current Phase
 
-- Phase 17: Starter template library — complete
+- Phase 21: Autosave + canvas load — complete
 
 ## Current Goal
 
 - [Next feature spec]
 
 ## Completed
+
+- Autosave and canvas persistence (spec: context/feature-specs/21-autosave.md)
+  - `prisma/models/project.prisma` — renamed `canvasJsonPath` → `canvasUrl`; migration `20261112231015_rename_canvas_url` applied; Prisma client regenerated
+  - `app/api/projects/[projectID]/canvas/route.ts` — `GET` reads `canvasUrl` from project, fetches blob, returns `{ nodes, edges }` (empty arrays if no saved state); `PUT` uploads canvas JSON to Vercel Blob at `canvas/{projectID}.json`, updates `canvasUrl` in Prisma; both endpoints require auth + project access via `getIdentity`/`getProjectAccess`
+  - `hooks/use-autosave.ts` — `useAutosave(projectId, nodes, edges, onStatusChange?)`; skips initial mount; debounces saves to 1500ms; tracks `SaveStatus: "idle" | "saving" | "saved" | "error"`; exposes status as return value and optional callback
+  - `components/editor/canvas/canvas-flow.tsx` — `CanvasFlow`/`CanvasFlowInner` accept `projectId` + `onSaveStatusChange`; `useAutosave` wired to nodes/edges; `useEffect` on mount loads persisted canvas (GET route) only when room is empty (nodes.length === 0 && edges.length === 0), skips if room already has content to protect active collaborators
+  - `components/editor/canvas/canvas-room.tsx` — forwarded `onSaveStatusChange` prop to `CanvasFlow`
+  - `components/editor/workspace-shell.tsx` — `saveStatus` state; passed `onSaveStatusChange={setSaveStatus}` to `CanvasRoom`; passed `saveStatus` to `EditorNavbar`
+  - `components/editor/editor-navbar.tsx` — `saveStatus` prop; shows inline status (spinner + "Saving…", check + "Saved", alert + "Save failed") next to project name; hidden when `idle`
+
+- AI sidebar shell UI (spec: context/feature-specs/20-ai-sidebar-shell-ui.md)
+  - `components/editor/ai-sidebar.tsx` — new `AiSidebar` component; two tabs (`AI Architect`, `Spec`) using shadcn `Tabs`; active tab styled with `bg-accent-ai text-white` via `data-active:`; `ArchitectTab`: scrollable chat with user messages right-aligned and AI messages left-aligned, three starter bubble buttons when empty, auto-resizing textarea (min 72px / max 160px), Enter to send / Shift+Enter for newline, send button with `bg-accent-ai`; `SpecTab`: Generate Spec button, demo spec card with `bg-bg-elevated border-border-default`, file icon, title, snippet, disabled download button
+  - `components/editor/workspace-shell.tsx` — replaced inline aside placeholder with `<AiSidebar />`; wrapped in a `max-width` transition div (`0px` → `320px`) for smooth slide-in animation; removed unused `Bot` import
+
+- Presence avatars and live cursors (spec: context/feature-specs/19-presence-avatar-cursor.md)
+  - `liveblocks.config.ts` — renamed `isThinking` → `thinking` to match spec
+  - `components/editor/canvas/canvas-room.tsx` — updated `initialPresence` to `{ cursor: null, thinking: false }`
+  - `components/editor/canvas/canvas-cursor.tsx` — new `CanvasCursor` component; uses `useOther(connectionId, ...)` to read the other user's `info.name` and `info.color`; renders a small SVG arrow cursor with a colored name badge below; tip anchored at (0,0) in cursor space
+  - `components/editor/canvas/canvas-presence.tsx` — new `CanvasPresence` component; uses `useOthers()` for other participants; renders up to 5 `CollabAvatar` items (image or initials fallback, overlap stack with `box-shadow` ring); +N chip for overflow; divider shown only when collaborators exist; Clerk `UserButton` sized to match (w-8 h-8 via appearance override)
+  - `components/editor/canvas/canvas-flow.tsx` — added `<Panel position="top-right"><CanvasPresence /></Panel>` inside ReactFlow; passed `components={{ Cursor: CanvasCursor }}` to `<Cursors>` for name badges on live cursors
 
 - Starter template library (spec: context/feature-specs/17-starter-template.md)
   - `lib/templates.ts` — `Template` type + `TEMPLATES` array; 4 entries: Scratch (empty), Microservices (API gateway → 3 services + 2 cylinder DBs), CI/CD Pipeline (5-node sequential), Event-Driven (producer → pill bus → 3 consumers); helper fns `n()` / `e()` keep definitions terse

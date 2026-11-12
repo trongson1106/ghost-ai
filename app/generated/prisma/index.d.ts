@@ -1048,7 +1048,7 @@ export namespace Prisma {
     name: string | null
     description: string | null
     status: $Enums.ProjectStatus | null
-    canvasJsonPath: string | null
+    canvasUrl: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1059,7 +1059,7 @@ export namespace Prisma {
     name: string | null
     description: string | null
     status: $Enums.ProjectStatus | null
-    canvasJsonPath: string | null
+    canvasUrl: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -1070,7 +1070,7 @@ export namespace Prisma {
     name: number
     description: number
     status: number
-    canvasJsonPath: number
+    canvasUrl: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -1083,7 +1083,7 @@ export namespace Prisma {
     name?: true
     description?: true
     status?: true
-    canvasJsonPath?: true
+    canvasUrl?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1094,7 +1094,7 @@ export namespace Prisma {
     name?: true
     description?: true
     status?: true
-    canvasJsonPath?: true
+    canvasUrl?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -1105,7 +1105,7 @@ export namespace Prisma {
     name?: true
     description?: true
     status?: true
-    canvasJsonPath?: true
+    canvasUrl?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -1189,7 +1189,7 @@ export namespace Prisma {
     name: string
     description: string | null
     status: $Enums.ProjectStatus
-    canvasJsonPath: string | null
+    canvasUrl: string | null
     createdAt: Date
     updatedAt: Date
     _count: ProjectCountAggregateOutputType | null
@@ -1217,7 +1217,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     status?: boolean
-    canvasJsonPath?: boolean
+    canvasUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     collaborators?: boolean | Project$collaboratorsArgs<ExtArgs>
@@ -1230,7 +1230,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     status?: boolean
-    canvasJsonPath?: boolean
+    canvasUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["project"]>
@@ -1241,7 +1241,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     status?: boolean
-    canvasJsonPath?: boolean
+    canvasUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["project"]>
@@ -1252,12 +1252,12 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     status?: boolean
-    canvasJsonPath?: boolean
+    canvasUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ownerId" | "name" | "description" | "status" | "canvasJsonPath" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
+  export type ProjectOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ownerId" | "name" | "description" | "status" | "canvasUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     collaborators?: boolean | Project$collaboratorsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
@@ -1276,7 +1276,7 @@ export namespace Prisma {
       name: string
       description: string | null
       status: $Enums.ProjectStatus
-      canvasJsonPath: string | null
+      canvasUrl: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["project"]>
@@ -1708,7 +1708,7 @@ export namespace Prisma {
     readonly name: FieldRef<"Project", 'String'>
     readonly description: FieldRef<"Project", 'String'>
     readonly status: FieldRef<"Project", 'ProjectStatus'>
-    readonly canvasJsonPath: FieldRef<"Project", 'String'>
+    readonly canvasUrl: FieldRef<"Project", 'String'>
     readonly createdAt: FieldRef<"Project", 'DateTime'>
     readonly updatedAt: FieldRef<"Project", 'DateTime'>
   }
@@ -3216,7 +3216,7 @@ export namespace Prisma {
     name: 'name',
     description: 'description',
     status: 'status',
-    canvasJsonPath: 'canvasJsonPath',
+    canvasUrl: 'canvasUrl',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -3331,7 +3331,7 @@ export namespace Prisma {
     name?: StringFilter<"Project"> | string
     description?: StringNullableFilter<"Project"> | string | null
     status?: EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
-    canvasJsonPath?: StringNullableFilter<"Project"> | string | null
+    canvasUrl?: StringNullableFilter<"Project"> | string | null
     createdAt?: DateTimeFilter<"Project"> | Date | string
     updatedAt?: DateTimeFilter<"Project"> | Date | string
     collaborators?: ProjectCollaboratorListRelationFilter
@@ -3343,7 +3343,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     status?: SortOrder
-    canvasJsonPath?: SortOrderInput | SortOrder
+    canvasUrl?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     collaborators?: ProjectCollaboratorOrderByRelationAggregateInput
@@ -3358,7 +3358,7 @@ export namespace Prisma {
     name?: StringFilter<"Project"> | string
     description?: StringNullableFilter<"Project"> | string | null
     status?: EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
-    canvasJsonPath?: StringNullableFilter<"Project"> | string | null
+    canvasUrl?: StringNullableFilter<"Project"> | string | null
     createdAt?: DateTimeFilter<"Project"> | Date | string
     updatedAt?: DateTimeFilter<"Project"> | Date | string
     collaborators?: ProjectCollaboratorListRelationFilter
@@ -3370,7 +3370,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     status?: SortOrder
-    canvasJsonPath?: SortOrderInput | SortOrder
+    canvasUrl?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ProjectCountOrderByAggregateInput
@@ -3387,7 +3387,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Project"> | string
     description?: StringNullableWithAggregatesFilter<"Project"> | string | null
     status?: EnumProjectStatusWithAggregatesFilter<"Project"> | $Enums.ProjectStatus
-    canvasJsonPath?: StringNullableWithAggregatesFilter<"Project"> | string | null
+    canvasUrl?: StringNullableWithAggregatesFilter<"Project"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
   }
@@ -3449,7 +3449,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     status?: $Enums.ProjectStatus
-    canvasJsonPath?: string | null
+    canvasUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     collaborators?: ProjectCollaboratorCreateNestedManyWithoutProjectInput
@@ -3461,7 +3461,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     status?: $Enums.ProjectStatus
-    canvasJsonPath?: string | null
+    canvasUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     collaborators?: ProjectCollaboratorUncheckedCreateNestedManyWithoutProjectInput
@@ -3473,7 +3473,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-    canvasJsonPath?: NullableStringFieldUpdateOperationsInput | string | null
+    canvasUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     collaborators?: ProjectCollaboratorUpdateManyWithoutProjectNestedInput
@@ -3485,7 +3485,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-    canvasJsonPath?: NullableStringFieldUpdateOperationsInput | string | null
+    canvasUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     collaborators?: ProjectCollaboratorUncheckedUpdateManyWithoutProjectNestedInput
@@ -3497,7 +3497,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     status?: $Enums.ProjectStatus
-    canvasJsonPath?: string | null
+    canvasUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -3508,7 +3508,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-    canvasJsonPath?: NullableStringFieldUpdateOperationsInput | string | null
+    canvasUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -3519,7 +3519,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-    canvasJsonPath?: NullableStringFieldUpdateOperationsInput | string | null
+    canvasUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -3641,7 +3641,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     status?: SortOrder
-    canvasJsonPath?: SortOrder
+    canvasUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -3652,7 +3652,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     status?: SortOrder
-    canvasJsonPath?: SortOrder
+    canvasUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -3663,7 +3663,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     status?: SortOrder
-    canvasJsonPath?: SortOrder
+    canvasUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -4011,7 +4011,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     status?: $Enums.ProjectStatus
-    canvasJsonPath?: string | null
+    canvasUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -4022,7 +4022,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     status?: $Enums.ProjectStatus
-    canvasJsonPath?: string | null
+    canvasUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -4049,7 +4049,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-    canvasJsonPath?: NullableStringFieldUpdateOperationsInput | string | null
+    canvasUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -4060,7 +4060,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-    canvasJsonPath?: NullableStringFieldUpdateOperationsInput | string | null
+    canvasUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

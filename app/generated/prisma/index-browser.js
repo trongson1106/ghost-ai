@@ -126,7 +126,7 @@ exports.Prisma.ProjectScalarFieldEnum = {
   name: 'name',
   description: 'description',
   status: 'status',
-  canvasJsonPath: 'canvasJsonPath',
+  canvasUrl: 'canvasUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
