@@ -2,7 +2,7 @@
   <img src="public/logo.svg" alt="Trellis" height="80" />
 </p>
 
-<h1 align="center">Trellis</h1>
+<h1 align="center"><a href="https://trellisai.vercel.app/">Trellis</a></h1>
 
 <p align="center">
   A real-time collaborative system design workspace powered by AI.<br/>
@@ -94,6 +94,8 @@ npm run dev
 > ```bash
 > npx trigger.dev@latest dev
 > ```
+
+> **Note:** Trigger.dev background tasks (AI architecture generation, spec export) work locally but are **not yet functional on the production deployment** at [trellisai.vercel.app](https://trellisai.vercel.app/).
 
 ---
 
