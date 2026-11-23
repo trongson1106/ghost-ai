@@ -1,38 +1,132 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/logo.svg" alt="Trellis" height="80" />
+</p>
+
+<h1 align="center">Trellis</h1>
+
+<p align="center">
+  A real-time collaborative system design workspace powered by AI.<br/>
+  Describe your architecture in plain English — Trellis maps it onto a shared canvas.<br/>
+  Collaborators refine the design together, then export a technical specification.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs" alt="Next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06b6d4?logo=tailwindcss&logoColor=white" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/Liveblocks-realtime-ff4154?logo=liveblocks&logoColor=white" alt="Liveblocks" />
+  <img src="https://img.shields.io/badge/Trigger.dev-v4-7c3aed?logoColor=white" alt="Trigger.dev" />
+</p>
+
+---
+
+## Features
+
+| | |
+|---|---|
+| **AI Architecture Generation** | Prompt the AI to generate or extend a system design. Nodes and edges are written directly into the shared canvas as a durable background task. |
+| **Real-time Collaboration** | Multiple users edit the same canvas simultaneously with live cursors and presence avatars. |
+| **Starter Templates** | Import prebuilt system designs — microservices, event-driven, CI/CD pipeline, and more. |
+| **Canvas Editing** | Drag-and-drop shapes, resize nodes, draw connections, edit labels inline, and color-code components. |
+| **Spec Generation** | Convert the final canvas graph into a Markdown technical specification. Download or copy the result. |
+| **Project Management** | Create, rename, and delete projects. Invite collaborators by email and manage access. |
+| **Autosave** | Canvas state is debounce-saved to cloud blob storage and restored on re-entry. |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 + TypeScript (strict) |
+| UI | Tailwind CSS v4 + shadcn/ui |
+| Auth | Clerk v7 |
+| Database | PostgreSQL · Prisma 7 · Prisma Accelerate |
+| Real-time canvas | Liveblocks + React Flow |
+| Background tasks | Trigger.dev v4 |
+| AI | Google Gemini 2.5 Flash via Vercel AI SDK |
+| Artifact storage | Vercel Blob |
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 20+
+- PostgreSQL database (or a Prisma Accelerate connection string)
+- Accounts: [Clerk](https://clerk.com), [Liveblocks](https://liveblocks.io), [Trigger.dev](https://trigger.dev), [Vercel Blob](https://vercel.com/storage/blob), [Google AI Studio](https://aistudio.google.com)
+
+### Environment Variables
+
+```env
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+
+# Database
+DATABASE_URL=
+
+# Liveblocks
+LIVEBLOCKS_SECRET_KEY=
+
+# Trigger.dev
+TRIGGER_SECRET_KEY=
+
+# Vercel Blob
+BLOB_READ_WRITE_TOKEN=
+
+# Google AI
+GOOGLE_GENERATIVE_AI_API_KEY=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Install and Run
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npx prisma migrate deploy
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> AI features require the Trigger.dev dev server running in a separate terminal:
+> ```bash
+> npx trigger.dev@latest dev
+> ```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  api/            Route handlers — auth, projects, canvas, AI tasks
+  editor/         Project list home + workspace pages
+  sign-in/
+  sign-up/
+components/
+  editor/         Workspace shell, navbar, sidebars, canvas surfaces
+  ui/             shadcn primitives
+hooks/            Autosave, keyboard shortcuts, project actions
+lib/              Prisma client, auth helpers, Liveblocks client, templates
+prisma/           Schema models and migrations
+src/trigger/      Durable AI background tasks (design agent, spec agent)
+types/            Shared TypeScript types
+proxy.ts          Next.js 16 middleware — Clerk route protection
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Architecture Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Canvas state** lives in Liveblocks rooms. Snapshots persist to Vercel Blob and reload on room entry when the room is empty — protecting active collaborators from overwrites.
+- **AI tasks** run as durable Trigger.dev background jobs. The API route triggers the job and returns a `runId`; the client subscribes via `useRealtimeRun` for live status updates.
+- **Specs** are generated by reading the Liveblocks canvas, calling Gemini, and uploading the result to Vercel Blob at `specs/{projectId}/{timestamp}.md`.
+- **Auth and ownership** are enforced at every API mutation boundary — Clerk session + Prisma ownership checks on every write.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
 
-# ghost-ai
+## License
+
+Private.
