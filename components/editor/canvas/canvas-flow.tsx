@@ -9,9 +9,10 @@ import {
   ConnectionMode,
   Panel,
   useReactFlow,
+  BezierEdge,
 } from "@xyflow/react";
 import { useLiveblocksFlow, Cursors } from "@liveblocks/react-flow";
-import { useHistory } from "@liveblocks/react";
+import { useHistory, useEventListener } from "@liveblocks/react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { NODE_COLORS } from "@/types/canvas";
 import type { CanvasNode, CanvasNodeData, CanvasEdge } from "@/types/canvas";
@@ -28,6 +29,7 @@ import "@liveblocks/react-ui/styles.css";
 import "@liveblocks/react-flow/styles.css";
 
 const nodeTypes = { canvasNode: CanvasNodeComponent };
+const edgeTypes = { canvasEdge: BezierEdge };
 
 let nodeCounter = 0;
 
@@ -58,6 +60,13 @@ function CanvasFlowInner({ projectId, onSaveStatusChange, onSaveReady }: CanvasF
   const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null);
 
   useKeyboardShortcuts({ flow, undo, redo });
+
+  const [aiStatus, setAiStatus] = useState<{ thinking: boolean; message: string } | null>(null);
+  useEventListener(({ event }) => {
+    if (event.type === "AI_STATUS") {
+      setAiStatus(event.thinking ? { thinking: true, message: event.message } : null);
+    }
+  });
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -199,13 +208,22 @@ function CanvasFlowInner({ projectId, onSaveStatusChange, onSaveReady }: CanvasF
         onPaneClick={() => setCtxMenu(null)}
         onMove={() => setCtxMenu(null)}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Loose}
         fitView
       >
         <Background variant={BackgroundVariant.Dots} />
         <Cursors components={{ Cursor: CanvasCursor }} />
         <Panel position="top-right">
-          <CanvasPresence />
+          <div className="flex items-center gap-2">
+            {aiStatus?.thinking && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-bg-elevated border border-border-default text-xs text-accent-ai-text">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent-ai-text animate-pulse shrink-0" />
+                {aiStatus.message}
+              </div>
+            )}
+            <CanvasPresence />
+          </div>
         </Panel>
         <Panel position="bottom-left">
           <CanvasControls

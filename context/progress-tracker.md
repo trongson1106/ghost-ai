@@ -5,13 +5,34 @@ change.
 
 ## Current Phase
 
-- Phase 21: Autosave + canvas load — complete
+- Phase 24: Spec generation backend — complete
 
 ## Current Goal
 
 - [Next feature spec]
 
 ## Completed
+
+- Spec generation backend (spec: context/feature-specs/24-spec-generation-backend.md)
+  - `src/trigger/spec-agent.ts` — `specAgentTask` exported; reads Liveblocks canvas nodes/edges via `mutateFlow` read pass; calls Gemini `gemini-2.5-flash` via `generateText` to produce a Markdown spec document; uploads to Vercel Blob at `specs/{projectId}/{timestamp}.md`; sets Trigger.dev `metadata` (`status`, `message`, `markdown`) throughout; returns `{ markdown }`
+  - `app/api/ai/spec/route.ts` — `POST`; requires auth + project access; triggers `spec-agent` task; creates `TaskRun` record; returns `{ runId }`
+  - `app/api/ai/spec/token/route.ts` — `POST`; requires auth; looks up `TaskRun` by `runId`; verifies `userId` ownership; returns Trigger.dev public token scoped to that run
+  - `components/editor/ai-sidebar.tsx` — `SpecTab` now accepts `projectId` prop; on "Generate Spec" click: `POST /api/ai/spec`, then `POST /api/ai/spec/token`, subscribes with `useRealtimeRun`; shows spinner + live status while generating; on `status=done` renders markdown in a `ScrollArea` `<pre>` block + enabled Download button that creates a client-side blob download; `AiSidebar` forwards `projectId` to `SpecTab`
+
+- Design AI logic (spec: context/feature-specs/23-design-ai-logic)
+  - `liveblocks.config.ts` — added `RoomEvent: { type: "AI_STATUS"; thinking: boolean; message: string }` to the global Liveblocks type declaration so canvas clients can subscribe to AI presence broadcasts
+  - `src/trigger/design-agent.ts` — fully implemented; reads existing canvas state via `mutateFlow` read pass; calls Gemini `gemini-2.5-flash` via `generateObject` with a discriminated-union zod schema covering `addNode`, `updateNode`, `moveNode`, `resizeNode`, `deleteNode`, `addEdge`, `deleteEdge`; applies all operations in a single `mutateFlow` write; broadcasts `AI_STATUS` events via `liveblocks.broadcastEvent` at start/generating/applying/done steps; sets Trigger.dev `metadata` (`status`, `message`) throughout; handles Gemini and canvas mutation errors separately with graceful broadcast + rethrow
+  - `components/editor/ai-sidebar.tsx` — `ArchitectTab` accepts `projectId` prop; on send: `POST /api/ai/design`, then `POST /api/ai/design/token`, then subscribes with `useRealtimeRun` from `@trigger.dev/react-hooks` (skipColumns payload/output); live thinking message sourced from `run.metadata.message`; spinner on button during run; textarea disabled while thinking; on `status=done` or `status=error` appends AI message and clears run handle; `AiSidebar` now accepts and forwards `projectId` prop
+  - `components/editor/workspace-shell.tsx` — passes `projectId={project.id}` to `<AiSidebar>`
+  - `components/editor/canvas/canvas-flow.tsx` — added `useEventListener` from `@liveblocks/react`; `aiStatus` state; on `AI_STATUS` events sets thinking pill visible or clears it; pill renders in the top-right Panel beside `CanvasPresence` with animated dot + live status message text from the broadcast event
+
+
+
+- Design agent API (spec: context/feature-specs/22-design-agent-api.md)
+  - `prisma/models/task-run.prisma` — `TaskRun` model (`runId` unique, `projectId`, `userId`, `createdAt`; indexes on `runId` and `[userId, projectId]`); migration `20261113181257_add_task_run` applied; Prisma client regenerated
+  - `src/trigger/design-agent.ts` — `designAgentTask` exported; accepts `{ prompt, roomId }`; logs input; no AI logic yet
+  - `app/api/ai/design/route.ts` — `POST`; requires auth + project access; triggers `design-agent` task via `tasks.trigger`; creates `TaskRun` record; returns `{ runId }`
+  - `app/api/ai/design/token/route.ts` — `POST`; requires auth; looks up `TaskRun` by `runId`; verifies `userId` ownership; calls `auth.createPublicToken` scoped to that run; returns `{ token }`
 
 - Autosave and canvas persistence (spec: context/feature-specs/21-autosave.md)
   - `prisma/models/project.prisma` — renamed `canvasJsonPath` → `canvasUrl`; migration `20261112231015_rename_canvas_url` applied; Prisma client regenerated

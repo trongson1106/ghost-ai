@@ -9,6 +9,8 @@ import { DeleteProjectDialog } from "@/components/editor/dialogs/delete-project-
 import { ShareDialog } from "@/components/editor/dialogs/share-dialog";
 import { CanvasRoom } from "@/components/editor/canvas/canvas-room";
 import { AiSidebar } from "@/components/editor/ai-sidebar";
+import { LiveblocksProvider, RoomProvider } from "@liveblocks/react";
+import { LiveList } from "@liveblocks/client";
 import { useProjectActions } from "@/hooks/use-project-actions";
 import { type SaveStatus } from "@/hooks/use-autosave";
 import type { ProjectSummary } from "@/types/project";
@@ -65,6 +67,12 @@ export function WorkspaceShell({
         onShare={() => setShareOpen(true)}
       />
 
+      <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
+        <RoomProvider
+          id={project.id}
+          initialPresence={{ cursor: null, thinking: false, isTyping: false }}
+          initialStorage={{ chat: new LiveList([]) }}
+        >
       <div className="flex flex-1 overflow-hidden">
         <ProjectSidebar
           isOpen={sidebarOpen}
@@ -85,9 +93,11 @@ export function WorkspaceShell({
           className="overflow-hidden transition-[max-width] duration-300 ease-in-out"
           style={{ maxWidth: aiSidebarOpen ? "320px" : "0px" }}
         >
-          <AiSidebar />
+          <AiSidebar projectId={project.id} />
         </div>
       </div>
+        </RoomProvider>
+      </LiveblocksProvider>
 
       <ShareDialog
         open={shareOpen}
