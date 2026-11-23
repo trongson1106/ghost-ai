@@ -4,14 +4,14 @@ enum ProjectStatus {
 }
 
 model Project {
-  id             String        @id @default(cuid())
-  ownerId        String
-  name           String
-  description    String?
-  status         ProjectStatus @default(DRAFT)
-  canvasJsonPath String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id          String        @id @default(cuid())
+  ownerId     String
+  name        String
+  description String?
+  status      ProjectStatus @default(DRAFT)
+  canvasUrl   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   collaborators ProjectCollaborator[]
 
@@ -30,6 +30,17 @@ model ProjectCollaborator {
   @@unique([projectId, email])
   @@index([email])
   @@index([projectId, createdAt])
+}
+
+model TaskRun {
+  id        String   @id @default(cuid())
+  runId     String   @unique
+  projectId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@index([runId])
+  @@index([userId, projectId])
 }
 
 generator client {

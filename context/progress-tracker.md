@@ -5,13 +5,54 @@ change.
 
 ## Current Phase
 
-- Phase 17: Starter template library — complete
+- Phase 24: Spec generation backend — complete
 
 ## Current Goal
 
 - [Next feature spec]
 
 ## Completed
+
+- Spec generation backend (spec: context/feature-specs/24-spec-generation-backend.md)
+  - `src/trigger/spec-agent.ts` — `specAgentTask` exported; reads Liveblocks canvas nodes/edges via `mutateFlow` read pass; calls Gemini `gemini-2.5-flash` via `generateText` to produce a Markdown spec document; uploads to Vercel Blob at `specs/{projectId}/{timestamp}.md`; sets Trigger.dev `metadata` (`status`, `message`, `markdown`) throughout; returns `{ markdown }`
+  - `app/api/ai/spec/route.ts` — `POST`; requires auth + project access; triggers `spec-agent` task; creates `TaskRun` record; returns `{ runId }`
+  - `app/api/ai/spec/token/route.ts` — `POST`; requires auth; looks up `TaskRun` by `runId`; verifies `userId` ownership; returns Trigger.dev public token scoped to that run
+  - `components/editor/ai-sidebar.tsx` — `SpecTab` now accepts `projectId` prop; on "Generate Spec" click: `POST /api/ai/spec`, then `POST /api/ai/spec/token`, subscribes with `useRealtimeRun`; shows spinner + live status while generating; on `status=done` renders markdown in a `ScrollArea` `<pre>` block + enabled Download button that creates a client-side blob download; `AiSidebar` forwards `projectId` to `SpecTab`
+
+- Design AI logic (spec: context/feature-specs/23-design-ai-logic)
+  - `liveblocks.config.ts` — added `RoomEvent: { type: "AI_STATUS"; thinking: boolean; message: string }` to the global Liveblocks type declaration so canvas clients can subscribe to AI presence broadcasts
+  - `src/trigger/design-agent.ts` — fully implemented; reads existing canvas state via `mutateFlow` read pass; calls Gemini `gemini-2.5-flash` via `generateObject` with a discriminated-union zod schema covering `addNode`, `updateNode`, `moveNode`, `resizeNode`, `deleteNode`, `addEdge`, `deleteEdge`; applies all operations in a single `mutateFlow` write; broadcasts `AI_STATUS` events via `liveblocks.broadcastEvent` at start/generating/applying/done steps; sets Trigger.dev `metadata` (`status`, `message`) throughout; handles Gemini and canvas mutation errors separately with graceful broadcast + rethrow
+  - `components/editor/ai-sidebar.tsx` — `ArchitectTab` accepts `projectId` prop; on send: `POST /api/ai/design`, then `POST /api/ai/design/token`, then subscribes with `useRealtimeRun` from `@trigger.dev/react-hooks` (skipColumns payload/output); live thinking message sourced from `run.metadata.message`; spinner on button during run; textarea disabled while thinking; on `status=done` or `status=error` appends AI message and clears run handle; `AiSidebar` now accepts and forwards `projectId` prop
+  - `components/editor/workspace-shell.tsx` — passes `projectId={project.id}` to `<AiSidebar>`
+  - `components/editor/canvas/canvas-flow.tsx` — added `useEventListener` from `@liveblocks/react`; `aiStatus` state; on `AI_STATUS` events sets thinking pill visible or clears it; pill renders in the top-right Panel beside `CanvasPresence` with animated dot + live status message text from the broadcast event
+
+
+
+- Design agent API (spec: context/feature-specs/22-design-agent-api.md)
+  - `prisma/models/task-run.prisma` — `TaskRun` model (`runId` unique, `projectId`, `userId`, `createdAt`; indexes on `runId` and `[userId, projectId]`); migration `20261113181257_add_task_run` applied; Prisma client regenerated
+  - `src/trigger/design-agent.ts` — `designAgentTask` exported; accepts `{ prompt, roomId }`; logs input; no AI logic yet
+  - `app/api/ai/design/route.ts` — `POST`; requires auth + project access; triggers `design-agent` task via `tasks.trigger`; creates `TaskRun` record; returns `{ runId }`
+  - `app/api/ai/design/token/route.ts` — `POST`; requires auth; looks up `TaskRun` by `runId`; verifies `userId` ownership; calls `auth.createPublicToken` scoped to that run; returns `{ token }`
+
+- Autosave and canvas persistence (spec: context/feature-specs/21-autosave.md)
+  - `prisma/models/project.prisma` — renamed `canvasJsonPath` → `canvasUrl`; migration `20261112231015_rename_canvas_url` applied; Prisma client regenerated
+  - `app/api/projects/[projectID]/canvas/route.ts` — `GET` reads `canvasUrl` from project, fetches blob, returns `{ nodes, edges }` (empty arrays if no saved state); `PUT` uploads canvas JSON to Vercel Blob at `canvas/{projectID}.json`, updates `canvasUrl` in Prisma; both endpoints require auth + project access via `getIdentity`/`getProjectAccess`
+  - `hooks/use-autosave.ts` — `useAutosave(projectId, nodes, edges, onStatusChange?)`; skips initial mount; debounces saves to 1500ms; tracks `SaveStatus: "idle" | "saving" | "saved" | "error"`; exposes status as return value and optional callback
+  - `components/editor/canvas/canvas-flow.tsx` — `CanvasFlow`/`CanvasFlowInner` accept `projectId` + `onSaveStatusChange`; `useAutosave` wired to nodes/edges; `useEffect` on mount loads persisted canvas (GET route) only when room is empty (nodes.length === 0 && edges.length === 0), skips if room already has content to protect active collaborators
+  - `components/editor/canvas/canvas-room.tsx` — forwarded `onSaveStatusChange` prop to `CanvasFlow`
+  - `components/editor/workspace-shell.tsx` — `saveStatus` state; passed `onSaveStatusChange={setSaveStatus}` to `CanvasRoom`; passed `saveStatus` to `EditorNavbar`
+  - `components/editor/editor-navbar.tsx` — `saveStatus` prop; shows inline status (spinner + "Saving…", check + "Saved", alert + "Save failed") next to project name; hidden when `idle`
+
+- AI sidebar shell UI (spec: context/feature-specs/20-ai-sidebar-shell-ui.md)
+  - `components/editor/ai-sidebar.tsx` — new `AiSidebar` component; two tabs (`AI Architect`, `Spec`) using shadcn `Tabs`; active tab styled with `bg-accent-ai text-white` via `data-active:`; `ArchitectTab`: scrollable chat with user messages right-aligned and AI messages left-aligned, three starter bubble buttons when empty, auto-resizing textarea (min 72px / max 160px), Enter to send / Shift+Enter for newline, send button with `bg-accent-ai`; `SpecTab`: Generate Spec button, demo spec card with `bg-bg-elevated border-border-default`, file icon, title, snippet, disabled download button
+  - `components/editor/workspace-shell.tsx` — replaced inline aside placeholder with `<AiSidebar />`; wrapped in a `max-width` transition div (`0px` → `320px`) for smooth slide-in animation; removed unused `Bot` import
+
+- Presence avatars and live cursors (spec: context/feature-specs/19-presence-avatar-cursor.md)
+  - `liveblocks.config.ts` — renamed `isThinking` → `thinking` to match spec
+  - `components/editor/canvas/canvas-room.tsx` — updated `initialPresence` to `{ cursor: null, thinking: false }`
+  - `components/editor/canvas/canvas-cursor.tsx` — new `CanvasCursor` component; uses `useOther(connectionId, ...)` to read the other user's `info.name` and `info.color`; renders a small SVG arrow cursor with a colored name badge below; tip anchored at (0,0) in cursor space
+  - `components/editor/canvas/canvas-presence.tsx` — new `CanvasPresence` component; uses `useOthers()` for other participants; renders up to 5 `CollabAvatar` items (image or initials fallback, overlap stack with `box-shadow` ring); +N chip for overflow; divider shown only when collaborators exist; Clerk `UserButton` sized to match (w-8 h-8 via appearance override)
+  - `components/editor/canvas/canvas-flow.tsx` — added `<Panel position="top-right"><CanvasPresence /></Panel>` inside ReactFlow; passed `components={{ Cursor: CanvasCursor }}` to `<Cursors>` for name badges on live cursors
 
 - Starter template library (spec: context/feature-specs/17-starter-template.md)
   - `lib/templates.ts` — `Template` type + `TEMPLATES` array; 4 entries: Scratch (empty), Microservices (API gateway → 3 services + 2 cylinder DBs), CI/CD Pipeline (5-node sequential), Event-Driven (producer → pill bus → 3 consumers); helper fns `n()` / `e()` keep definitions terse

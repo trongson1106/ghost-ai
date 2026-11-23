@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 120 120" role="img" aria-label="Trellis">
+<rect width="120" height="120" rx="28" fill="#14213D"/>
+<g stroke="#F6F4EE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<path d="M60 26 L32 60 L60 94 L88 60 Z"/>
+<path d="M60 26 V94"/>
+<path d="M32 60 H88"/>
+</g>
+<circle cx="32" cy="60" r="8" fill="#F6F4EE"/>
+<circle cx="88" cy="60" r="8" fill="#F6F4EE"/>
+<circle cx="60" cy="94" r="8" fill="#2EC4B6"/>
+<path d="M60 8 C62.5 19 67 24 79 26 C67 28 62.5 33 60 44 C57.5 33 53 28 41 26 C53 24 57.5 19 60 8 Z" fill="#FFB84D"/>
+</svg>

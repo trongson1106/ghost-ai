@@ -126,3 +126,19 @@
         @apply font-sans;
     }
 }
+
+/* Clerk sign-in/sign-up button hover overrides */
+.cl-socialButtonsBlockButton {
+    transition: background-color 0.2s ease, transform 0.2s ease !important;
+}
+.cl-socialButtonsBlockButton:hover {
+    background-color: #2e2e38 !important;
+    transform: scale(1.025) !important;
+}
+.cl-formButtonPrimary {
+    transition: filter 0.2s ease, transform 0.2s ease !important;
+}
+.cl-formButtonPrimary:hover {
+    filter: brightness(1.25) !important;
+    transform: scale(1.025) !important;
+}

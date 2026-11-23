@@ -126,7 +126,7 @@ exports.Prisma.ProjectScalarFieldEnum = {
   name: 'name',
   description: 'description',
   status: 'status',
-  canvasJsonPath: 'canvasJsonPath',
+  canvasUrl: 'canvasUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -135,6 +135,14 @@ exports.Prisma.ProjectCollaboratorScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
   email: 'email',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TaskRunScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  projectId: 'projectId',
+  userId: 'userId',
   createdAt: 'createdAt'
 };
 
@@ -159,7 +167,8 @@ exports.ProjectStatus = exports.$Enums.ProjectStatus = {
 
 exports.Prisma.ModelName = {
   Project: 'Project',
-  ProjectCollaborator: 'ProjectCollaborator'
+  ProjectCollaborator: 'ProjectCollaborator',
+  TaskRun: 'TaskRun'
 };
 
 /**
