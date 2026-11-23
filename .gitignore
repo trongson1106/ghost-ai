@@ -42,4 +42,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# internal docs
+SUMMARY.md
+
 .trigger
